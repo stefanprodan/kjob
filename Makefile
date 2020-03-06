@@ -3,7 +3,7 @@ VERSION?=$(shell grep 'VERSION' pkg/version/version.go | awk '{ print $$4 }' | t
 LT_VERSION?=$(shell grep 'VERSION' cmd/loadtester/main.go | awk '{ print $$4 }' | tr -d '"' | head -n1)
 
 build:
-	CGO_ENABLED=0 go build -o ./bin/job-runner .
+	CGO_ENABLED=0 go build -o ./bin/kjob ./cmd/kjob
 
 fmt:
 	gofmt -l -s -w ./
