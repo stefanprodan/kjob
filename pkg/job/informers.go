@@ -1,4 +1,4 @@
-package main
+package job
 
 import (
 	"log"
@@ -18,7 +18,7 @@ type Informers struct {
 	PodInformer     podInformers.PodInformer
 }
 
-func startInformers(client *kubernetes.Clientset, namespace string, stopCh <-chan struct{}) Informers {
+func StartInformers(client *kubernetes.Clientset, namespace string, stopCh <-chan struct{}) Informers {
 	factory := kubeInformers.NewSharedInformerFactoryWithOptions(client, 5*time.Second, kubeInformers.WithNamespace(namespace))
 
 	cronJobsInformer := factory.Batch().V1beta1().CronJobs()

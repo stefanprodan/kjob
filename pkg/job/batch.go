@@ -1,4 +1,4 @@
-package main
+package job
 
 import (
 	"bytes"
@@ -14,7 +14,7 @@ import (
 	"k8s.io/client-go/kubernetes"
 )
 
-func runJob(client *kubernetes.Clientset, informers Informers, name string, namespace string) (string, error) {
+func Run(client *kubernetes.Clientset, informers Informers, name string, namespace string) (string, error) {
 	cronjob, err := informers.CronJobInformer.Lister().CronJobs(namespace).Get(name)
 	if err != nil {
 		return "", err

@@ -42,5 +42,5 @@ EOF
 Run the job:
 
 ```text
-go run . -kubeconfig=$HOME/.kube/config -template curl -namespace default
+go run ./cmd/kjob/ run --kubeconfig=$HOME/.kube/config -t curl -n test
 ```
