@@ -1,4 +1,4 @@
-# job-runner
+# kjob
 
 Job runner is a small utility written in Go that:
 * creates a Kubernetes Job from a CronJob template
@@ -39,8 +39,8 @@ spec:
 EOF
 ```
 
-Run the job:
+Download a kjob [release](https://github.com/stefanprodan/kjob/releases) and run the job:
 
 ```text
-go run ./cmd/kjob/ run --kubeconfig=$HOME/.kube/config -t curl -n test
+kjob run --kubeconfig=$HOME/.kube/config -t curl -n test
 ```

@@ -1,6 +1,5 @@
 TAG?=latest
-VERSION?=$(shell grep 'VERSION' pkg/version/version.go | awk '{ print $$4 }' | tr -d '"')
-LT_VERSION?=$(shell grep 'VERSION' cmd/loadtester/main.go | awk '{ print $$4 }' | tr -d '"' | head -n1)
+VERSION?=$(shell grep 'VERSION' cmd/kjob/main.go | awk '{ print $$4 }' | tr -d '"')
 
 build:
 	CGO_ENABLED=0 go build -o ./bin/kjob ./cmd/kjob
@@ -16,3 +15,6 @@ test-fmt:
 test:
 	go test ./...
 
+release:
+	git tag "v$(VERSION)"
+	git push origin "v$(VERSION)"
