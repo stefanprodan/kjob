@@ -1,0 +1,47 @@
+apiVersion: batch/v1beta1
+kind: CronJob
+metadata:
+  name: curl
+spec:
+  schedule: "*/1 * * * *"
+  successfulJobsHistoryLimit: 0
+  failedJobsHistoryLimit: 0
+  suspend: true
+  jobTemplate:
+    spec:
+      backoffLimit: 0
+      activeDeadlineSeconds: 100
+      template:
+        spec:
+          restartPolicy: Never
+          containers:
+            - name: kubectl
+              image: curlimages/curl:7.69.0
+              command:
+                - /bin/sh
+                - -c
+                - "curl -sL flagger.app | grep License"
+---
+apiVersion: batch/v1beta1
+kind: CronJob
+metadata:
+  name: curl-fail
+spec:
+  schedule: "*/1 * * * *"
+  successfulJobsHistoryLimit: 0
+  failedJobsHistoryLimit: 0
+  suspend: true
+  jobTemplate:
+    spec:
+      backoffLimit: 0
+      activeDeadlineSeconds: 100
+      template:
+        spec:
+          restartPolicy: Never
+          containers:
+            - name: kubectl
+              image: curlimages/curl:7.69.0
+              command:
+                - /bin/sh
+                - -c
+                - "curl -sL flagger.app | grep make-it-fail"
