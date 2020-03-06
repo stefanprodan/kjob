@@ -42,5 +42,5 @@ EOF
 Run the job:
 
 ```text
-go run main.go  -kubeconfig=$HOME/.kube/config -template curl -namespace default
+go run . -kubeconfig=$HOME/.kube/config -template curl -namespace default
 ```

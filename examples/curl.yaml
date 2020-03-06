@@ -44,4 +44,4 @@ spec:
               command:
                 - /bin/sh
                 - -c
-                - "curl -sL flagger.app | grep make-it-fail"
+                - "echo 'something went wrong' && curl -sL flagger.app | grep make-it-fail"
