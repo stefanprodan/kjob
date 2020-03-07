@@ -1,5 +1,8 @@
 # kjob
 
+![e2e](https://github.com/stefanprodan/kjob/workflows/ci/badge.svg)
+![release](https://github.com/stefanprodan/kjob/workflows/release/badge.svg)
+
 Job runner is a small utility written in Go that:
 * creates a Kubernetes Job from a CronJob template
 * waits for job completion
