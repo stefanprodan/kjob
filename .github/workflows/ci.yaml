@@ -1,11 +1,15 @@
-name: build
+name: ci
 
 on:
   pull_request:
   push:
+    branches-ignore:
+      - gh-pages
+    tags-ignore:
+      - v.*
 
 jobs:
-  build:
+  e2e:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -25,3 +29,9 @@ jobs:
         run: make test
       - name: Build
         run: make build
+      - uses: engineerd/setup-kind@v0.3.0
+      - name: Integration test
+        run: |
+          kubectl create ns test
+          kubectl -n test apply -f examples/curl.yaml
+          bin/kjob run --kubeconfig=$HOME/.kube/config -t curl -n test
