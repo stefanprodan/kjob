@@ -45,5 +45,8 @@ EOF
 Download a kjob [release](https://github.com/stefanprodan/kjob/releases) and run the job:
 
 ```text
+kjob run --kubeconfig=$HOME/.kube/config -t curl
+
+# Or pass a namespace
 kjob run --kubeconfig=$HOME/.kube/config -t curl -n test
 ```
