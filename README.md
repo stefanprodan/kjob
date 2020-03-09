@@ -5,6 +5,7 @@
 
 Job runner is a small utility written in Go that:
 * creates a Kubernetes Job from a CronJob template
+* overrides the job command if specified
 * waits for job completion
 * prints the pod logs
 * removes the pods and the job object
@@ -44,9 +45,27 @@ EOF
 
 Download a kjob [release](https://github.com/stefanprodan/kjob/releases) and run the job:
 
-```text
+```bash
 kjob run --kubeconfig=$HOME/.kube/config -t curl
+```
 
-# Or pass a namespace
-kjob run --kubeconfig=$HOME/.kube/config -t curl -n test
+For a list of available arguments run:
+
+```text
+$ kjob run --help
+
+Usage:
+  kjob run --template cron-job-template --namespace namespace [flags]
+
+Examples:
+  run --kubeconfig $HOME/.kube/config -t curl -c "curl -sL flagger.app | grep License" --cleanup=false
+
+Flags:
+      --cleanup             Delete job and pods after completion. (default true)
+  -c, --command string      Override container command.
+  -h, --help                help for run
+      --kubeconfig string   Path to a kubeconfig file.
+      --master string       The address of the Kubernetes API server.
+  -n, --namespace string    Namespace of the CronJob used as template. (default "default")
+  -t, --template string     CronJob name used as template.
 ```

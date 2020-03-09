@@ -14,9 +14,8 @@ import (
 )
 
 var runJobCmd = &cobra.Command{
-	Use:     `run -t cron-job-template -n namespace`,
-	Short:   "run job",
-	Example: `  run -t test -n default`,
+	Use:     `run --template cron-job-template --namespace namespace`,
+	Example: `  run --kubeconfig $HOME/.kube/config -t curl -c "curl -sL flagger.app | grep License" --cleanup=false`,
 	RunE:    runJob,
 }
 
@@ -25,6 +24,8 @@ var (
 	kubeconfig string
 	template   string
 	namespace  string
+	command    string
+	cleanup    bool
 )
 
 func init() {
@@ -32,6 +33,8 @@ func init() {
 	runJobCmd.Flags().StringVarP(&kubeconfig, "kubeconfig", "", "", "Path to a kubeconfig file.")
 	runJobCmd.Flags().StringVarP(&template, "template", "t", "", "CronJob name used as template.")
 	runJobCmd.Flags().StringVarP(&namespace, "namespace", "n", "default", "Namespace of the CronJob used as template.")
+	runJobCmd.Flags().StringVarP(&command, "command", "c", "", "Override container command.")
+	runJobCmd.Flags().BoolVarP(&cleanup, "cleanup", "", true, "Delete job and pods after completion.")
 
 	rootCmd.AddCommand(runJobCmd)
 }
@@ -58,7 +61,7 @@ func runJob(cmd *cobra.Command, args []string) error {
 
 	informers := job.StartInformers(client, namespace, stopCh)
 
-	logs, err := job.Run(client, informers, template, namespace)
+	logs, err := job.Run(client, informers, template, namespace, command, cleanup)
 	if logs != "" {
 		log.Print(logs)
 	}

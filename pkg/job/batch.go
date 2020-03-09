@@ -14,10 +14,19 @@ import (
 	"k8s.io/client-go/kubernetes"
 )
 
-func Run(client *kubernetes.Clientset, informers Informers, name string, namespace string) (string, error) {
+func Run(client *kubernetes.Clientset, informers Informers, name string, namespace string, command string, cleanup bool) (string, error) {
 	cronjob, err := informers.CronJobInformer.Lister().CronJobs(namespace).Get(name)
 	if err != nil {
 		return "", err
+	}
+
+	spec := cronjob.Spec.JobTemplate.Spec
+	if command != "" {
+		spec.Template.Spec.Containers[0].Command = []string{
+			"/bin/sh",
+			"-c",
+			command,
+		}
 	}
 
 	job := &batchv1.Job{
@@ -25,7 +34,7 @@ func Run(client *kubernetes.Clientset, informers Informers, name string, namespa
 			GenerateName: cronjob.GetName() + "-",
 			Namespace:    namespace,
 		},
-		Spec: cronjob.Spec.JobTemplate.Spec,
+		Spec: spec,
 	}
 
 	job, err = client.BatchV1().Jobs(namespace).Create(job)
@@ -75,9 +84,11 @@ func Run(client *kubernetes.Clientset, informers Informers, name string, namespa
 		return "", err
 	}
 
-	err = cleanup(client, pods, jobName, namespace)
-	if err != nil {
-		return "", err
+	if cleanup {
+		err = jobCleanup(client, pods, jobName, namespace)
+		if err != nil {
+			return "", err
+		}
 	}
 
 	if failureMessage != "" {
@@ -86,7 +97,7 @@ func Run(client *kubernetes.Clientset, informers Informers, name string, namespa
 	return logs, nil
 }
 
-func cleanup(client *kubernetes.Clientset, pods []string, job string, namespace string) error {
+func jobCleanup(client *kubernetes.Clientset, pods []string, job string, namespace string) error {
 	err := client.BatchV1().Jobs(namespace).Delete(job, &metav1.DeleteOptions{})
 	if err != nil && !errors.IsNotFound(err) {
 		return err

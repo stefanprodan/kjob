@@ -9,7 +9,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var VERSION = "0.0.1"
+var VERSION = "0.1.0"
 
 var rootCmd = &cobra.Command{
 	Use:     "kjob",
