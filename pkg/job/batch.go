@@ -22,6 +22,7 @@ func Run(client *kubernetes.Clientset, informers Informers, name string, namespa
 
 	spec := cronjob.Spec.JobTemplate.Spec
 	if command != "" {
+		// TODO: get rid of sh
 		spec.Template.Spec.Containers[0].Command = []string{
 			"/bin/sh",
 			"-c",
@@ -79,7 +80,7 @@ func Run(client *kubernetes.Clientset, informers Informers, name string, namespa
 		return "", fmt.Errorf("no pods found for job %s", jobName)
 	}
 
-	logs, err := logs(client, pods[0], namespace)
+	logs, err := getLogs(client, pods, namespace)
 	if err != nil {
 		return "", err
 	}
@@ -112,18 +113,21 @@ func jobCleanup(client *kubernetes.Clientset, pods []string, job string, namespa
 	return nil
 }
 
-func logs(client *kubernetes.Clientset, pod string, namespace string) (string, error) {
-	req := client.CoreV1().Pods(namespace).GetLogs(pod, &corev1.PodLogOptions{})
-	podLogs, err := req.Stream()
-	if err != nil {
-		return "", err
-	}
-	defer podLogs.Close()
-
+func getLogs(client *kubernetes.Clientset, pods []string, namespace string) (string, error) {
 	buf := new(bytes.Buffer)
-	_, err = io.Copy(buf, podLogs)
-	if err != nil {
-		return "", err
+
+	for _, pod := range pods {
+		req := client.CoreV1().Pods(namespace).GetLogs(pod, &corev1.PodLogOptions{})
+		stream, err := req.Stream()
+		if err != nil {
+			return "", err
+		}
+
+		_, err = io.Copy(buf, stream)
+		stream.Close()
+		if err != nil {
+			return "", err
+		}
 	}
 
 	return buf.String(), nil

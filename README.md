@@ -43,13 +43,23 @@ spec:
 EOF
 ```
 
-Download a kjob [release](https://github.com/stefanprodan/kjob/releases) and run the job:
+Download the latest [release](https://github.com/stefanprodan/kjob/releases/latest) and run the job:
 
-```bash
-kjob run --kubeconfig=$HOME/.kube/config -t curl
+```text
+$ kjob run -t curl -n default
 ```
 
-For a list of available arguments run:
+Override the job command:
+
+```text
+$ kjob run -t curl -c "echo 'some error message' && grep tag"
+
+some error message
+Error running job: Job has reached the specified backoff limit
+exit status 1
+```
+
+List of available arguments:
 
 ```text
 $ kjob run --help
@@ -61,11 +71,10 @@ Examples:
   run --kubeconfig $HOME/.kube/config -t curl -c "curl -sL flagger.app | grep License" --cleanup=false
 
 Flags:
-      --cleanup             Delete job and pods after completion. (default true)
-  -c, --command string      Override container command.
+      --cleanup             delete job and pods after completion (default true)
+  -c, --command string      override container command
   -h, --help                help for run
-      --kubeconfig string   Path to a kubeconfig file.
-      --master string       The address of the Kubernetes API server.
-  -n, --namespace string    Namespace of the CronJob used as template. (default "default")
-  -t, --template string     CronJob name used as template.
+      --kubeconfig string   path to the kubeconfig file (default "/Users/aleph/.kube/config")
+  -n, --namespace string    namespace of the CronJob used as template (default "default")
+  -t, --template string     CronJob name used as template
 ```
