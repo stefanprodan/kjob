@@ -2,6 +2,7 @@ package job
 
 import (
 	"bytes"
+	"context"
 	"fmt"
 	"io"
 	"time"
@@ -14,7 +15,7 @@ import (
 	"k8s.io/client-go/kubernetes"
 )
 
-func Run(client *kubernetes.Clientset, informers Informers, name string, namespace string, command string, cleanup bool) (string, error) {
+func Run(ctx context.Context, client *kubernetes.Clientset, informers Informers, name string, namespace string, command string, cleanup bool) (string, error) {
 	cronjob, err := informers.CronJobInformer.Lister().CronJobs(namespace).Get(name)
 	if err != nil {
 		return "", err
@@ -38,7 +39,7 @@ func Run(client *kubernetes.Clientset, informers Informers, name string, namespa
 		Spec: spec,
 	}
 
-	job, err = client.BatchV1().Jobs(namespace).Create(job)
+	job, err = client.BatchV1().Jobs(namespace).Create(ctx, job, metav1.CreateOptions{})
 	if err != nil {
 		return "", err
 	}
@@ -80,13 +81,13 @@ func Run(client *kubernetes.Clientset, informers Informers, name string, namespa
 		return "", fmt.Errorf("no pods found for job %s", jobName)
 	}
 
-	logs, err := getLogs(client, pods, namespace)
+	logs, err := getLogs(ctx, client, pods, namespace)
 	if err != nil {
 		return "", err
 	}
 
 	if cleanup {
-		err = jobCleanup(client, pods, jobName, namespace)
+		err = jobCleanup(ctx, client, pods, jobName, namespace)
 		if err != nil {
 			return "", err
 		}
@@ -98,14 +99,14 @@ func Run(client *kubernetes.Clientset, informers Informers, name string, namespa
 	return logs, nil
 }
 
-func jobCleanup(client *kubernetes.Clientset, pods []string, job string, namespace string) error {
-	err := client.BatchV1().Jobs(namespace).Delete(job, &metav1.DeleteOptions{})
+func jobCleanup(ctx context.Context, client *kubernetes.Clientset, pods []string, job string, namespace string) error {
+	err := client.BatchV1().Jobs(namespace).Delete(ctx, job, &metav1.DeleteOptions{})
 	if err != nil && !errors.IsNotFound(err) {
 		return err
 	}
 
 	for _, item := range pods {
-		err = client.CoreV1().Pods(namespace).Delete(item, &metav1.DeleteOptions{})
+		err = client.CoreV1().Pods(namespace).Delete(ctx, item, &metav1.DeleteOptions{})
 		if err != nil && !errors.IsNotFound(err) {
 			return err
 		}
@@ -113,12 +114,12 @@ func jobCleanup(client *kubernetes.Clientset, pods []string, job string, namespa
 	return nil
 }
 
-func getLogs(client *kubernetes.Clientset, pods []string, namespace string) (string, error) {
+func getLogs(ctx context.Context, client *kubernetes.Clientset, pods []string, namespace string) (string, error) {
 	buf := new(bytes.Buffer)
 
 	for _, pod := range pods {
 		req := client.CoreV1().Pods(namespace).GetLogs(pod, &corev1.PodLogOptions{})
-		stream, err := req.Stream()
+		stream, err := req.Stream(ctx)
 		if err != nil {
 			return "", err
 		}

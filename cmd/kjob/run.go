@@ -1,12 +1,14 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"log"
 	"os"
 	"os/signal"
 	"path/filepath"
 	"syscall"
+	"time"
 
 	"github.com/spf13/cobra"
 	"github.com/stefanprodan/kjob/pkg/job"
@@ -27,6 +29,7 @@ var (
 	namespace  string
 	command    string
 	cleanup    bool
+	timeout    time.Duration
 )
 
 func init() {
@@ -39,7 +42,7 @@ func init() {
 	runJobCmd.Flags().StringVarP(&namespace, "namespace", "n", "default", "namespace of the CronJob used as template")
 	runJobCmd.Flags().StringVarP(&command, "command", "c", "", "override container command")
 	runJobCmd.Flags().BoolVarP(&cleanup, "cleanup", "", true, "delete job and pods after completion")
-
+	runJobCmd.Flags().DurationVarP(&timeout, "timeout", "", time.Minute, "timeout for Kubernetes operations")
 	rootCmd.AddCommand(runJobCmd)
 }
 
@@ -65,7 +68,10 @@ func runJob(cmd *cobra.Command, args []string) error {
 
 	informers := job.StartInformers(client, namespace, stopCh)
 
-	logs, err := job.Run(client, informers, template, namespace, command, cleanup)
+	ctx, cancel := context.WithTimeout(context.Background(), timeout)
+	defer cancel()
+
+	logs, err := job.Run(ctx, client, informers, template, namespace, command, cleanup)
 	if logs != "" {
 		log.Print(logs)
 	}

@@ -77,4 +77,5 @@ Flags:
       --kubeconfig string   path to the kubeconfig file (default "/Users/aleph/.kube/config")
   -n, --namespace string    namespace of the CronJob used as template (default "default")
   -t, --template string     CronJob name used as template
+      --timeout duration    timeout for Kubernetes operations (default 1m0s)
 ```
