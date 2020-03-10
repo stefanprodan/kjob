@@ -18,8 +18,8 @@ import (
 )
 
 var runJobCmd = &cobra.Command{
-	Use:     `run --template cron-job-template --namespace namespace`,
-	Example: `  run --kubeconfig $HOME/.kube/config -t curl -c "curl -sL flagger.app | grep License" --cleanup=false`,
+	Use:     `run -t cron-job-template -n namespace`,
+	Example: `  run --template curl --command "curl -sL flagger.app/index.yaml" --cleanup=false --timeout=2m`,
 	RunE:    runJob,
 }
 
@@ -38,9 +38,9 @@ func init() {
 	} else {
 		runJobCmd.Flags().StringVarP(&kubeconfig, "kubeconfig", "", "", "absolute path to the kubeconfig file")
 	}
-	runJobCmd.Flags().StringVarP(&template, "template", "t", "", "CronJob name used as template")
-	runJobCmd.Flags().StringVarP(&namespace, "namespace", "n", "default", "namespace of the CronJob used as template")
-	runJobCmd.Flags().StringVarP(&command, "command", "c", "", "override container command")
+	runJobCmd.Flags().StringVarP(&template, "template", "t", "", "cron job template name")
+	runJobCmd.Flags().StringVarP(&namespace, "namespace", "n", "default", "namespace of the cron job template")
+	runJobCmd.Flags().StringVarP(&command, "command", "c", "", "override job command")
 	runJobCmd.Flags().BoolVarP(&cleanup, "cleanup", "", true, "delete job and pods after completion")
 	runJobCmd.Flags().DurationVarP(&timeout, "timeout", "", time.Minute, "timeout for Kubernetes operations")
 	rootCmd.AddCommand(runJobCmd)

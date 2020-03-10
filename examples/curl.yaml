@@ -20,7 +20,7 @@ spec:
               command:
                 - /bin/sh
                 - -c
-                - "curl -sL flagger.app | grep License"
+                - "curl -sL flagger.app/index.yaml | grep generated"
 ---
 apiVersion: batch/v1beta1
 kind: CronJob

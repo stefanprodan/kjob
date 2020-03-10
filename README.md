@@ -1,17 +1,19 @@
 # kjob
 
-![e2e](https://github.com/stefanprodan/kjob/workflows/ci/badge.svg)
-![release](https://github.com/stefanprodan/kjob/workflows/release/badge.svg)
+[![e2e](https://github.com/stefanprodan/kjob/workflows/ci/badge.svg)](https://github.com/stefanprodan/kjob/actions)
+[![release](https://github.com/stefanprodan/kjob/workflows/release/badge.svg)](https://github.com/stefanprodan/kjob/actions)
 
-Job runner is a small utility written in Go that:
+**kjob** is a small utility written in Go that:
 * creates a Kubernetes Job from a CronJob template
 * overrides the job command if specified
 * waits for job completion
-* prints the pod logs
+* prints the pods logs
 * removes the pods and the job object
-* if the job failed it exits with status 1
+* exits with status 1 if the job failed
 
 ## Usage
+
+Download kjob binary from GitHub [releases](https://github.com/stefanprodan/kjob/releases/latest).
 
 Create a suspended CronJob that will serve as a template:
 
@@ -39,43 +41,45 @@ spec:
               command:
                 - /bin/sh
                 - -c
-                - "curl -sL flagger.app | grep License"
+                - "curl -sL flagger.app/index.yaml | grep generated"
 EOF
 ```
 
-Download the latest [release](https://github.com/stefanprodan/kjob/releases/latest) and run the job:
+Run the job with:
 
 ```text
 $ kjob run -t curl -n default
+
+generated: "2020-03-04T18:53:07.586083089Z"
 ```
 
-Override the job command:
+Override the job command with:
 
 ```text
-$ kjob run -t curl -c "echo 'some error message' && grep tag"
+$ kjob run -t curl -c "echo 'something went wrong' && grep tag"
 
-some error message
-Error running job: Job has reached the specified backoff limit
+something went wrong
+error: Job has reached the specified backoff limit
 exit status 1
 ```
 
-List of available arguments:
+List of available flags:
 
 ```text
 $ kjob run --help
 
 Usage:
-  kjob run --template cron-job-template --namespace namespace [flags]
+  kjob run -t cron-job-template -n namespace [flags]
 
 Examples:
-  run --kubeconfig $HOME/.kube/config -t curl -c "curl -sL flagger.app | grep License" --cleanup=false
+  run --template curl --command "curl -sL flagger.app/index.yaml" --cleanup=false --timeout=2m
 
 Flags:
       --cleanup             delete job and pods after completion (default true)
-  -c, --command string      override container command
+  -c, --command string      override job command
   -h, --help                help for run
-      --kubeconfig string   path to the kubeconfig file (default "/Users/aleph/.kube/config")
-  -n, --namespace string    namespace of the CronJob used as template (default "default")
-  -t, --template string     CronJob name used as template
+      --kubeconfig string   path to the kubeconfig file (default "~/.kube/config")
+  -n, --namespace string    namespace of the cron job template (default "default")
+  -t, --template string     cron job template name
       --timeout duration    timeout for Kubernetes operations (default 1m0s)
 ```
