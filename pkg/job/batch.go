@@ -15,7 +15,7 @@ import (
 	"k8s.io/client-go/kubernetes"
 )
 
-func Run(ctx context.Context, client *kubernetes.Clientset, informers Informers, name string, namespace string, command string, cleanup bool) (string, error) {
+func Run(ctx context.Context, client *kubernetes.Clientset, informers Informers, name string, namespace string, shell string, command string, cleanup bool) (string, error) {
 	cronjob, err := informers.CronJobInformer.Lister().CronJobs(namespace).Get(name)
 	if err != nil {
 		return "", err
@@ -23,9 +23,8 @@ func Run(ctx context.Context, client *kubernetes.Clientset, informers Informers,
 
 	spec := cronjob.Spec.JobTemplate.Spec
 	if command != "" {
-		// TODO: get rid of sh
 		spec.Template.Spec.Containers[0].Command = []string{
-			"/bin/sh",
+			shell,
 			"-c",
 			command,
 		}
