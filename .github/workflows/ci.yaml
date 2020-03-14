@@ -36,7 +36,7 @@ jobs:
         run: |
           kubectl create ns test
           kubectl -n test apply -f examples/curl.yaml
-          bin/kjob run -t curl -n test
+          bin/kjob run -t curl -n test -c "echo testing"
       - name: Integration test (job failed)
         run: |
           if bin/kjob run -t curl-fail -n test; then
