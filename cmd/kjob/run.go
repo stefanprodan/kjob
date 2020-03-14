@@ -30,6 +30,7 @@ var (
 	command    string
 	cleanup    bool
 	timeout    time.Duration
+	shell      string
 )
 
 func init() {
@@ -41,6 +42,7 @@ func init() {
 	runJobCmd.Flags().StringVarP(&template, "template", "t", "", "cron job template name")
 	runJobCmd.Flags().StringVarP(&namespace, "namespace", "n", "default", "namespace of the cron job template")
 	runJobCmd.Flags().StringVarP(&command, "command", "c", "", "override job command")
+	runJobCmd.Flags().StringVarP(&shell, "shell", "", "sh", "command shell")
 	runJobCmd.Flags().BoolVarP(&cleanup, "cleanup", "", true, "delete job and pods after completion")
 	runJobCmd.Flags().DurationVarP(&timeout, "timeout", "", time.Minute, "timeout for Kubernetes operations")
 	rootCmd.AddCommand(runJobCmd)
@@ -71,7 +73,7 @@ func runJob(cmd *cobra.Command, args []string) error {
 	ctx, cancel := context.WithTimeout(context.Background(), timeout)
 	defer cancel()
 
-	logs, err := job.Run(ctx, client, informers, template, namespace, command, cleanup)
+	logs, err := job.Run(ctx, client, informers, template, namespace, shell, command, cleanup)
 	if logs != "" {
 		log.Print(logs)
 	}

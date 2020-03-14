@@ -36,10 +36,10 @@ spec:
         spec:
           restartPolicy: Never
           containers:
-            - name: kubectl
+            - name: curl
               image: curlimages/curl:7.69.0
               command:
-                - /bin/sh
+                - sh
                 - -c
                 - "curl -sL flagger.app/index.yaml | grep generated"
 EOF
@@ -80,6 +80,7 @@ Flags:
   -h, --help                help for run
       --kubeconfig string   path to the kubeconfig file (default "~/.kube/config")
   -n, --namespace string    namespace of the cron job template (default "default")
+      --shell string        command shell (default "sh")
   -t, --template string     cron job template name
       --timeout duration    timeout for Kubernetes operations (default 1m0s)
 ```

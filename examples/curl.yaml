@@ -15,10 +15,13 @@ spec:
         spec:
           restartPolicy: Never
           containers:
-            - name: kubectl
+            - name: curl
+              securityContext:
+                readOnlyRootFilesystem: true
+                runAsUser: 10001
               image: curlimages/curl:7.69.0
               command:
-                - /bin/sh
+                - sh
                 - -c
                 - "curl -sL flagger.app/index.yaml | grep generated"
 ---
@@ -39,9 +42,12 @@ spec:
         spec:
           restartPolicy: Never
           containers:
-            - name: kubectl
+            - name: curl
+              securityContext:
+                readOnlyRootFilesystem: true
+                runAsUser: 10001
               image: curlimages/curl:7.69.0
               command:
-                - /bin/sh
+                - sh
                 - -c
                 - "echo 'something went wrong' && curl -sL flagger.app | grep make-it-fail"
