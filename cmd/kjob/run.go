@@ -11,7 +11,7 @@ import (
 	"time"
 
 	"github.com/spf13/cobra"
-	"github.com/stefanprodan/kjob/pkg/job"
+	"github.com/stefanprodan/kjob/pkg/jobrunner"
 	"k8s.io/client-go/kubernetes"
 	_ "k8s.io/client-go/plugin/pkg/client/auth"
 	"k8s.io/client-go/tools/clientcmd"
@@ -68,14 +68,33 @@ func runJob(cmd *cobra.Command, args []string) error {
 		log.Fatalf("Error building kubernetes client: %v", err)
 	}
 
-	informers := job.StartInformers(client, namespace, stopCh)
+	ctrl, err := jobrunner.NewJobController(client, namespace, stopCh)
+	if err != nil {
+		log.Fatal(err)
+	}
 
 	ctx, cancel := context.WithTimeout(context.Background(), timeout)
 	defer cancel()
 
-	logs, err := job.Run(ctx, client, informers, template, namespace, shell, command, cleanup)
-	if logs != "" {
-		log.Print(logs)
+	job := jobrunner.Job{
+		TemplateRef: jobrunner.JobTemplateRef{
+			Name:      template,
+			Namespace: namespace,
+		},
+		BackoffLimit: 0,
+		Timeout:      timeout,
+		Command:      command,
+		CommandShell: shell,
+	}
+
+	result, err := ctrl.Run(ctx, job, cleanup)
+	if result != nil {
+		if result.Output != "" {
+			log.Print(result.Output)
+		}
+		if result.Status != nil && result.Status.Failed {
+			log.Fatalf("error: %s", result.Status.Message)
+		}
 	}
 	if err != nil {
 		log.Fatalf("error: %v", err)
