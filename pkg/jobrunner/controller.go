@@ -199,13 +199,13 @@ func (ctrl *JobController) logs(ctx context.Context, pods []string, namespace st
 }
 
 func (ctrl *JobController) cleanup(ctx context.Context, pods []string, job string, namespace string) error {
-	err := ctrl.client.BatchV1().Jobs(namespace).Delete(ctx, job, &metav1.DeleteOptions{})
+	err := ctrl.client.BatchV1().Jobs(namespace).Delete(ctx, job, metav1.DeleteOptions{})
 	if err != nil && !errors.IsNotFound(err) {
 		return err
 	}
 
 	for _, item := range pods {
-		err = ctrl.client.CoreV1().Pods(namespace).Delete(ctx, item, &metav1.DeleteOptions{})
+		err = ctrl.client.CoreV1().Pods(namespace).Delete(ctx, item, metav1.DeleteOptions{})
 		if err != nil && !errors.IsNotFound(err) {
 			return err
 		}
