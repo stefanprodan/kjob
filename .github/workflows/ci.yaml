@@ -25,6 +25,10 @@ jobs:
         uses: actions/setup-go@v2-beta
         with:
           go-version: 1.14.x
+      - name: Go env
+        run: |
+          go install ./cmd/kjob
+          ls $(echo `go env GOPATH`"/bin/")
       - name: Test
         run: make test
       - name: Build
