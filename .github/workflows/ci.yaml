@@ -25,10 +25,6 @@ jobs:
         uses: actions/setup-go@v2-beta
         with:
           go-version: 1.14.x
-      - name: Go env
-        run: |
-          go install ./cmd/kjob
-          ls $(echo `go env GOPATH`"/bin/")
       - name: Test
         run: make test
       - name: Build
@@ -36,6 +32,7 @@ jobs:
       - uses: engineerd/setup-kind@v0.3.0
         with:
           version: "v0.7.0"
+          image: "kindest/node:v1.18.0"
       - name: Integration test (job completed)
         run: |
           kubectl create ns test
